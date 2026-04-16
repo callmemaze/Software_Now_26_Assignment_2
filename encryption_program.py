@@ -98,7 +98,17 @@ def encrypt_file(input_path, output_path, shift1, shift2):
 
 
 def decrypt_file(input_path, output_path, shift1, shift2):
-    return None
+    try:
+        with open(input_path, "r") as f:
+            text = f.read()
+
+        decrypted = decrypt_text(text, shift1, shift2)
+
+        with open(output_path, "w") as f:
+            f.write(decrypted)
+
+    except Exception as e:
+        print("Decryption error:", e)
 
 
 
