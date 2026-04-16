@@ -1,7 +1,20 @@
 import os
 
 
-# ---------------- HELPER FUNCTIONS ---------------- #
+# ============================================================
+# HELPER FUNCTION: SHIFT A SINGLE CHARACTER
+# ============================================================
+# This function shifts a character forward or backward in the alphabet.
+# It preserves case (uppercase/lowercase) and wraps around using modulo.
+#
+# Parameters:
+#   c         → character to shift
+#   shift     → number of positions to shift
+#   direction → "forward" or "backward"
+#
+# Returns:
+#   shifted character
+# ============================================================
 
 def shift_char(c, shift, direction="forward"):
     base = ord('a') if c.islower() else ord('A')
@@ -15,7 +28,21 @@ def shift_char(c, shift, direction="forward"):
     return chr(base + new_index)
 
 
-# ---------------- ENCRYPTION ---------------- #
+# ============================================================
+# ENCRYPTION FUNCTION (STRING LEVEL)
+# ============================================================
+# Applies encryption rules to each character in the input text.
+#
+# Rules:
+#   - a–m → forward shift by (shift1 * shift2)
+#   - n–z → backward shift by (shift1 + shift2)
+#   - A–M → backward shift by shift1
+#   - N–Z → forward shift by (shift2 squared)
+#   - other characters → unchanged
+#
+# Returns:
+#   encrypted string
+# ============================================================
 
 def encrypt_text(text, shift1, shift2):
     result = []
@@ -43,13 +70,39 @@ def encrypt_text(text, shift1, shift2):
     return "".join(result)
 
 
-# ---------------- DECRYPTION ---------------- #
 
 def decrypt_text(text, shift1, shift2):
-    return None
+    result = []
+
+    for c in text:
+        if c.islower():
+            if 'a' <= c <= 'm':
+                shift = shift1 * shift2
+                result.append(shift_char(c, shift, "backward"))
+            else:
+                shift = shift1 + shift2
+                result.append(shift_char(c, shift, "forward"))
+
+        elif c.isupper():
+            if 'A' <= c <= 'M':
+                shift = shift1
+                result.append(shift_char(c, shift, "forward"))
+            else:
+                shift = shift2 ** 2
+                result.append(shift_char(c, shift, "backward"))
+
+        else:
+            result.append(c)
+
+    return "".join(result)
 
 
-# ---------------- FILE OPERATIONS ---------------- #
+# ============================================================
+# FILE ENCRYPTION FUNCTION
+# ============================================================
+# Reads raw_text.txt, encrypts it, and writes to encrypted_text.txt
+# Includes error handling for file operations.
+# ============================================================
 
 def encrypt_file(input_path, output_path, shift1, shift2):
     try:
@@ -65,11 +118,22 @@ def encrypt_file(input_path, output_path, shift1, shift2):
         print("Encryption error:", e)
 
 
+
 def decrypt_file(input_path, output_path, shift1, shift2):
     return None
 
 
-# ---------------- VERIFICATION ---------------- #
+
+# ============================================================
+# VERIFICATION FUNCTION
+# ============================================================
+# Compares original file with decrypted file to ensure correctness.
+#
+# Returns:
+#   True  → if files match
+#   False → otherwise
+# ============================================================
+
 
 def verify_files(file1, file2):
     try:
@@ -89,7 +153,15 @@ def verify_files(file1, file2):
         return False
 
 
-# ---------------- MAIN PROGRAM ---------------- #
+# ============================================================
+# MAIN PROGRAM
+# ============================================================
+# Flow:
+#   1. Get user input (shift1, shift2)
+#   2. Encrypt raw_text.txt
+#   3. Decrypt encrypted_text.txt
+#   4. Verify correctness
+# ============================================================
 
 def main():
     try:
