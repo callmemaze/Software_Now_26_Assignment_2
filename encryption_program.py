@@ -72,7 +72,7 @@ def encrypt_text(text, shift1, shift2):
 
 
 def decrypt_text(text, shift1, shift2):
-    return None
+    return None #None
 
 
 # ============================================================
