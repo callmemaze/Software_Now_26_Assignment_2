@@ -72,29 +72,7 @@ def encrypt_text(text, shift1, shift2):
 
 
 def decrypt_text(text, shift1, shift2):
-    result = []
-
-    for c in text:
-        if c.islower():
-            if 'a' <= c <= 'm':
-                shift = shift1 * shift2
-                result.append(shift_char(c, shift, "backward"))
-            else:
-                shift = shift1 + shift2
-                result.append(shift_char(c, shift, "forward"))
-
-        elif c.isupper():
-            if 'A' <= c <= 'M':
-                shift = shift1
-                result.append(shift_char(c, shift, "forward"))
-            else:
-                shift = shift2 ** 2
-                result.append(shift_char(c, shift, "backward"))
-
-        else:
-            result.append(c)
-
-    return "".join(result)
+    return None #None
 
 
 # ============================================================
