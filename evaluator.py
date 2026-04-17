@@ -156,7 +156,24 @@ def parse(tokens):
 # Converts parse tree into required output format.
 # ============================================================
 
+def format_number(val):
+    if float(val).is_integer():
+        return str(int(val))
+    return str(round(val, 4))
 
+
+def tree_to_string(node):
+    t = node[0]
+
+    if t == "num":
+        return format_number(node[1])
+
+    if t == "neg":
+        return f"(neg {tree_to_string(node[1])})"
+
+    if t == "bin":
+        op, left, right = node[1], node[2], node[3]
+        return f"({op} {tree_to_string(left)} {tree_to_string(right)})"
 
 # ============================================================
 # EVALUATION
