@@ -17,13 +17,26 @@ import os
 # ============================================================
 
 def shift_char(c, shift, direction="forward"):
-    base = ord('a') if c.islower() else ord('A')
+    # Non-alphabet characters remain unchanged
+    if not c.isalpha():
+        return c
+    if c.islower():
+        if 'a' <= c <= 'm':
+            base = ord('a')
+        else:
+            base = ord('n')
+    else:
+        if 'A' <= c <= 'M':
+            base = ord('A')
+        else:
+            base = ord('N')
+
     alpha_index = ord(c) - base
 
     if direction == "forward":
-        new_index = (alpha_index + shift) % 26
+        new_index = (alpha_index + shift) % 13
     else:
-        new_index = (alpha_index - shift) % 26
+        new_index = (alpha_index - shift) % 13
 
     return chr(base + new_index)
 
@@ -105,33 +118,36 @@ def decrypt_text(text, shift1, shift2):
 # Includes error handling for file operations.
 # ============================================================
 
-def encrypt_file(input_path, output_path, shift1, shift2):
+def encrypt_file(input_file, output_file, shift1, shift2):
     try:
-        with open(input_path, "r") as f:
+        with open(input_file, "r") as f:
             text = f.read()
+
+        if text == "":
+            print("Warning: Input file is empty.")
 
         encrypted = encrypt_text(text, shift1, shift2)
 
-        with open(output_path, "w") as f:
+        with open(output_file, "w") as f:
             f.write(encrypted)
 
-    except Exception as e:
-        print("Encryption error:", e)
+    except IOError:
+        raise Exception("File read/write error during encryption.")
 
 
 
-def decrypt_file(input_path, output_path, shift1, shift2):
+def decrypt_file(input_file, output_file, shift1, shift2):
     try:
-        with open(input_path, "r") as f:
+        with open(input_file, "r") as f:
             text = f.read()
 
         decrypted = decrypt_text(text, shift1, shift2)
 
-        with open(output_path, "w") as f:
+        with open(output_file, "w") as f:
             f.write(decrypted)
 
-    except Exception as e:
-        print("Decryption error:", e)
+    except IOError:
+        raise Exception("File read/write error during decryption.")
 
 
 
@@ -163,6 +179,19 @@ def verify_files(file1, file2):
         print("Verification error:", e)
         return False
 
+def get_integer_input(prompt):
+    """
+    Repeatedly asks the user for input until a valid integer is entered.
+    Prevents program from crashing on invalid input.
+    """
+    while True:
+        user_input = input(prompt)
+
+        try:
+            value = int(user_input)
+            return value
+        except ValueError:
+            print("Invalid input. Please enter a valid integer.")    
 
 # ============================================================
 # MAIN PROGRAM
@@ -175,27 +204,39 @@ def verify_files(file1, file2):
 # ============================================================
 
 def main():
-    try:
-        shift1 = int(input("Enter shift1: "))
-        shift2 = int(input("Enter shift2: "))
-    except ValueError:
-        print("Invalid input. Please enter integers.")
-        return
+    shift1 = get_integer_input("Enter shift1: (Number) ")
+    shift2 = get_integer_input("Enter shift2: (Number) ")
 
     input_file = "raw_text.txt"
     encrypted_file = "encrypted_text.txt"
     decrypted_file = "decrypted_text.txt"
 
+    if not os.path.exists(input_file):
+        print(f"Error: '{input_file}' not found.")
+        return
     # Step 1: Encrypt
-    encrypt_file(input_file, encrypted_file, shift1, shift2)
-    print("Encryption complete.")
+    try:
+        encrypt_file(input_file, encrypted_file, shift1, shift2)
+        print("Encryption complete.")
+    except Exception as e:
+        print("Error during encryption:", e)
+        return
 
     # Step 2: Decrypt
-    decrypt_file(encrypted_file, decrypted_file, shift1, shift2)
-    print("Decryption complete.")
+     # ---------------- DECRYPT ---------------- #
+    try:
+        decrypt_file(encrypted_file, decrypted_file, shift1, shift2)
+        print("Decryption complete.")
+    except Exception as e:
+        print("Error during decryption:", e)
+        return
 
     # Step 3: Verify
-    verify_files(input_file, decrypted_file)
+
+    try:
+        verify_files(input_file, decrypted_file)
+    except Exception as e:
+        print("Error during verification:", e)
 
 
 if __name__ == "__main__":
