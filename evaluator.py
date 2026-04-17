@@ -10,6 +10,8 @@ def debug(*args):
     if DEBUG:
         print("[DEBUG]:", *args)
 
+def error(stage, message):
+    return f"ERROR [{stage}]: {message}"
 
 # ============================================================
 # TOKENIZER (LEXICAL ANALYSIS)
@@ -31,9 +33,6 @@ NUMBER_REGEX = re.compile(r"""
 
 def tokenize(expr):
     tokens = []
-    
-
-
     i = 0
     n = len(expr)
 
@@ -67,7 +66,7 @@ def tokenize(expr):
             i += 1
             continue
 
-        raise ValueError(f"Invalid character: '{c}'")
+        raise ValueError(error("TOKENIZE", f"Invalid character '{c}'"))
 
     tokens.append(("END", ""))
     debug("Tokens:", tokens)
@@ -158,7 +157,7 @@ def parse(tokens):
                 return ("neg", operand)
 
             if tok[1] == "+":
-                raise ValueError("Unary + is not allowed")
+                raise ValueError(error("PARSE", "Unary + not allowed"))
 
         return parse_primary()
 
@@ -174,17 +173,17 @@ def parse(tokens):
             node = parse_expr()
 
             if peek()[0] != "RPAREN":
-                raise ValueError("Missing closing parenthesis")
+                raise ValueError(error("PARSE", "Missing closing parenthesis ')'"))
 
             consume("RPAREN")
             return node
 
-        raise ValueError(f"Unexpected token: {tok}")
+        raise ValueError(error("PARSE", "Unexpected token"))
 
     tree = parse_expr()
 
     if peek()[0] != "END":
-        raise ValueError("Unexpected trailing input")
+        raise ValueError(error("PARSE", "Unexpected trailing input"))
 
     debug("Parse tree:", tree)
     return tree
@@ -242,7 +241,7 @@ def eval_tree(node):
             return l * r
         if op == "/":
             if r == 0:
-                raise ZeroDivisionError("Division by zero")
+                raise ZeroDivisionError(error("EVAL", "Division by zero"))
             return l / r
 
     raise ValueError("Invalid node")
@@ -274,7 +273,8 @@ def tokens_to_string(tokens):
 
 def evaluate_file(input_path: str) -> list[dict]:
     import os
-
+    if not os.path.exists(input_path):
+        raise FileNotFoundError(f"Input file not found: {input_path}")
     results = []
     output_path = os.path.join(os.path.dirname(input_path), "output.txt")
 
