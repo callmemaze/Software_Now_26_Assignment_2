@@ -32,6 +32,45 @@ NUMBER_REGEX = re.compile(r"""
 def tokenize(expr):
     tokens = []
     
+
+
+    i = 0
+    n = len(expr)
+
+    while i < n:
+        c = expr[i]
+
+        if c.isspace():
+            i += 1
+            continue
+
+        # number (supports scientific notation)
+        match = NUMBER_REGEX.match(expr, i)
+        if match:
+            num_str = match.group(0)
+            tokens.append(("NUM", num_str))
+            i += len(num_str)
+            continue
+
+        if c in "+-*/":
+            tokens.append(("OP", c))
+            i += 1
+            continue
+
+        if c == "(":
+            tokens.append(("LPAREN", c))
+            i += 1
+            continue
+
+        if c == ")":
+            tokens.append(("RPAREN", c))
+            i += 1
+            continue
+
+        raise ValueError(f"Invalid character: '{c}'")
+
+    tokens.append(("END", ""))
+    debug("Tokens:", tokens)
     return tokens
 
 
