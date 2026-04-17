@@ -32,6 +32,45 @@ NUMBER_REGEX = re.compile(r"""
 def tokenize(expr):
     tokens = []
     
+
+
+    i = 0
+    n = len(expr)
+
+    while i < n:
+        c = expr[i]
+
+        if c.isspace():
+            i += 1
+            continue
+
+        # number (supports scientific notation)
+        match = NUMBER_REGEX.match(expr, i)
+        if match:
+            num_str = match.group(0)
+            tokens.append(("NUM", num_str))
+            i += len(num_str)
+            continue
+
+        if c in "+-*/":
+            tokens.append(("OP", c))
+            i += 1
+            continue
+
+        if c == "(":
+            tokens.append(("LPAREN", c))
+            i += 1
+            continue
+
+        if c == ")":
+            tokens.append(("RPAREN", c))
+            i += 1
+            continue
+
+        raise ValueError(f"Invalid character: '{c}'")
+
+    tokens.append(("END", ""))
+    debug("Tokens:", tokens)
     return tokens
 
 
@@ -156,7 +195,24 @@ def parse(tokens):
 # Converts parse tree into required output format.
 # ============================================================
 
+def format_number(val):
+    if float(val).is_integer():
+        return str(int(val))
+    return str(round(val, 4))
 
+
+def tree_to_string(node):
+    t = node[0]
+
+    if t == "num":
+        return format_number(node[1])
+
+    if t == "neg":
+        return f"(neg {tree_to_string(node[1])})"
+
+    if t == "bin":
+        op, left, right = node[1], node[2], node[3]
+        return f"({op} {tree_to_string(left)} {tree_to_string(right)})"
 
 # ============================================================
 # EVALUATION
