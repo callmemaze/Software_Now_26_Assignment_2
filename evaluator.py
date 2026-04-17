@@ -11,7 +11,15 @@ def debug(*args):
         print("[DEBUG]:", *args)
 
 
-# ---------------- TOKENIZER ---------------- #
+# ============================================================
+# TOKENIZER (LEXICAL ANALYSIS)
+# ============================================================
+# Converts raw expression string into tokens.
+# Supports:
+#   - numbers (including decimals and scientific notation)
+#   - operators (+, -, *, /)
+#   - parentheses
+# ============================================================
 
 NUMBER_REGEX = re.compile(r"""
     (\d+(\.\d*)?|\.\d+)      # normal decimal
@@ -19,49 +27,25 @@ NUMBER_REGEX = re.compile(r"""
 """, re.VERBOSE)
 
 
+
+
 def tokenize(expr):
     tokens = []
-    i = 0
-    n = len(expr)
-
-    while i < n:
-        c = expr[i]
-
-        if c.isspace():
-            i += 1
-            continue
-
-        # number (supports scientific notation)
-        match = NUMBER_REGEX.match(expr, i)
-        if match:
-            num_str = match.group(0)
-            tokens.append(("NUM", num_str))
-            i += len(num_str)
-            continue
-
-        if c in "+-*/":
-            tokens.append(("OP", c))
-            i += 1
-            continue
-
-        if c == "(":
-            tokens.append(("LPAREN", c))
-            i += 1
-            continue
-
-        if c == ")":
-            tokens.append(("RPAREN", c))
-            i += 1
-            continue
-
-        raise ValueError(f"Invalid character: '{c}'")
-
-    tokens.append(("END", ""))
-    debug("Tokens:", tokens)
+    
     return tokens
 
 
-# ---------------- PARSER ---------------- #
+# ============================================================
+# PARSER (RECURSIVE DESCENT)
+# ============================================================
+# Converts tokens into a parse tree following operator precedence.
+#
+# Grammar:
+#   expr   = term ((+|-) term)*
+#   term   = factor ((*|/) factor | implicit_mul)*
+#   factor = '-' factor | primary
+#   primary= NUM | '(' expr ')'
+# ============================================================
 
 def parse(tokens):
     pos = 0
@@ -166,30 +150,19 @@ def parse(tokens):
     debug("Parse tree:", tree)
     return tree
 
-
-# ---------------- TREE STRING ---------------- #
-
-def format_number(val):
-    if float(val).is_integer():
-        return str(int(val))
-    return str(round(val, 4))
+# ============================================================
+# TREE → STRING CONVERSION
+# ============================================================
+# Converts parse tree into required output format.
+# ============================================================
 
 
-def tree_to_string(node):
-    t = node[0]
 
-    if t == "num":
-        return format_number(node[1])
-
-    if t == "neg":
-        return f"(neg {tree_to_string(node[1])})"
-
-    if t == "bin":
-        op, left, right = node[1], node[2], node[3]
-        return f"({op} {tree_to_string(left)} {tree_to_string(right)})"
-
-
-# ---------------- EVALUATION ---------------- #
+# ============================================================
+# EVALUATION
+# ============================================================
+# Recursively evaluates the parse tree.
+# ============================================================
 
 def eval_tree(node):
     t = node[0]
@@ -219,7 +192,12 @@ def eval_tree(node):
     raise ValueError("Invalid node")
 
 
-# ---------------- TOKEN STRING ---------------- #
+# ============================================================
+# TOKEN STRING FORMATTER
+# ============================================================
+# Converts tokens into required output format.
+# ============================================================
+
 
 def tokens_to_string(tokens):
     result = []
@@ -231,7 +209,12 @@ def tokens_to_string(tokens):
     return " ".join(result)
 
 
-# ---------------- MAIN FUNCTION ---------------- #
+# ============================================================
+# MAIN FUNCTION
+# ============================================================
+# Reads input file, processes each expression, and writes output.
+# Also returns structured results.
+# ============================================================
 
 def evaluate_file(input_path: str) -> list[dict]:
     import os
